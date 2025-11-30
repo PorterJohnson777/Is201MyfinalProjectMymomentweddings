@@ -1,0 +1,304 @@
+
+/*wave effect description*/
+@import url(//fonts.googleapis.com/css?family=Lato:300:400);
+
+.wavesection {
+  margin:0;
+}
+
+.headingwave {
+  font-family: 'Lato', sans-serif;
+  font-weight:300;
+  letter-spacing: 2px;
+  font-size:48px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+    width: 100%;
+}
+.wavep {
+  font-family: 'Lato', sans-serif;
+  letter-spacing: 1px;
+  font-size:14px;
+  color: #333333;
+}
+
+.header {
+  position:relative;
+  text-align:center;
+  background: linear-gradient(60deg, rgba(84,58,183,1) 0%, rgba(0,172,193,1) 100%);
+  color:white;
+}
+.logo {
+  width:50px;
+  fill:white;
+  padding-right:15px;
+  display:inline-block;
+  vertical-align: middle;
+}
+
+.inner-header {
+  height:65vh;
+  width:100%;
+  margin: 0;
+  padding: 0;
+}
+
+.wave-flex { /*Flexbox for containers*/
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.waves {
+  position:relative;
+  width: 100%;
+  height:15vh;
+  margin-bottom:-7px; /*Fix for safari gap*/
+  min-height:100px;
+  max-height:150px;
+}
+
+.content {
+  position:relative;
+  height:20vh;
+  text-align:center;
+  background-color: white;
+}
+
+/*The Parallax effect on the primary page image*/
+.parallax > use {
+  animation: move-forever 25s cubic-bezier(.55,.5,.45,.5)     infinite;
+}
+.parallax > use:nth-child(1) {
+  animation-delay: -2s;
+  animation-duration: 7s;
+}
+.parallax > use:nth-child(2) {
+  animation-delay: -3s;
+  animation-duration: 10s;
+}
+.parallax > use:nth-child(3) {
+  animation-delay: -4s;
+  animation-duration: 13s;
+}
+.parallax > use:nth-child(4) {
+  animation-delay: -5s;
+  animation-duration: 20s;
+}
+@keyframes move-forever {
+  0% {
+   transform: translate3d(-90px,0,0);
+  }
+  100% { 
+    transform: translate3d(85px,0,0);
+  }
+}
+/*Shrinking for mobile*/
+@media (max-width: 768px) {
+  .waves {
+    height:40px;
+    min-height:40px;
+  }
+  .content {
+    height:30vh;
+  }
+  .waveheading {
+    font-size:24px;
+  }
+}
+/* Parallax background layer */
+header.masthead::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.55)),
+      url("../assets/img/romantic-hummingbird-nest-ranch-wedding-felt-intimate-despite-large-guest-list-arina-b-photography-13.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transform: translate3d(0,var(--parallax-y, 0px),0);
+    z-index: -1;
+    will-change: transform;
+  }
+  /*modifies the navbar to be white*/
+  .navbar {
+    --bs-navbar-padding-x: 0;
+    --bs-navbar-padding-y: 0.5rem;
+    --bs-navbar-color: rgb(255, 255, 255);
+    --bs-navbar-hover-color: rgba(255, 255, 255);
+    --bs-navbar-disabled-color: rgba(255, 255, 255);
+    --bs-navbar-active-color: rgba(255, 255, 255);
+    --bs-navbar-brand-padding-y: 0.3125rem;
+    --bs-navbar-brand-margin-end: 1rem;
+    --bs-navbar-brand-font-size: 1.25rem;
+    --bs-navbar-brand-color: rgba(255, 255, 255);
+    --bs-navbar-brand-hover-color: rgba(255, 255, 255);
+    --bs-navbar-nav-link-padding-x: 0.5rem;
+    --bs-navbar-toggler-padding-y: 0.25rem;
+    --bs-navbar-toggler-padding-x: 0.75rem;
+    --bs-navbar-toggler-font-size: 1.25rem;
+    --bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%280, 0, 0, 0.55%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    --bs-navbar-toggler-border-color: rgba(255, 255, 255);
+    --bs-navbar-toggler-border-radius: 0.375rem;
+    --bs-navbar-toggler-focus-width: 0.25rem;
+    --bs-navbar-toggler-transition: box-shadow 0.15s ease-in-out;
+    background-color: rgb(255, 255, 255);
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--bs-navbar-padding-y) var(--bs-navbar-padding-x);
+  }
+  /*modifies the color and effect of the primary button*/
+  .btn-primary {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #D4AF37;
+    --bs-btn-border-color: #D4AF37;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: transparent;
+    --bs-btn-hover-border-color: #D4AF37;
+    --bs-btn-focus-shadow-rgb: 255, 208, 38;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: transparent;
+    --bs-btn-active-border-color: #D4AF37;
+    --bs-btn-active-shadow: none;
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: transparent
+    --bs-btn-disabled-border-color: transparent;
+  }
+  .navbar-toggler{color: black;}
+  .portfolio-hover{color:#D4AF37} 
+  .fa-inverse{color: #D4AF37;}
+  .text-primary{color: #fff;}
+  .icon-circle {
+    color: #ffffff !important; /* Fill color (ivory/white) */
+    border: 4px solid #d4af37; /* Champagne gold border */
+    border-radius: 50%;
+    padding: 10px;             /* Adjusts thickness */
+    box-sizing: content-box;   /* Keeps border outside the icon */
+}
+.icon-wrapper {
+    position: relative;
+}
+
+/* The gold ring behind */
+.circle-border {
+    position: absolute;
+    width: 2.5em;   /* matches fa-stack-2x size */
+    height: 2.5em;
+    border: 4px solid #d4af37; /* gold ring */
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+}
+
+/* Filled circle if you want a white center */
+.icon-fill {
+    color: #ffffff; /* white/ivory fill */
+    z-index: 1;
+}
+
+/* Icon symbol color */
+.icon-symbol {
+    color: #d4af37; /* gold icon */
+    z-index: 2;
+}
+/* Ensure each service column aligns everything vertically */
+#services .col-md-4 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;   /* centers icons + text horizontally */
+    justify-content: flex-start; /* keeps everything aligned at the top */
+}
+
+/* Optional: keep all headings at the same height */
+#services .col-md-4 h4 {
+    margin-top: 20px;
+    min-height: 60px; /* adjusts depending on your heading length */
+    display: flex;
+    align-items: center;
+    text-align: center;
+}
+
+/* Optional: make all text blocks equal height */
+#services .col-md-4 p {
+    min-height: 80px;
+    text-align: center;
+}
+/* 1. Make all portfolio images exactly the same size */
+#portfolio .portfolio-item img {
+    width: 100%;
+    height: 260px;          /* tweak this number if you want taller/shorter */
+    object-fit: cover;
+    object-position: center;
+    display: block;         /* removes inline-gap weirdness */
+}
+
+/* 2. Make each column and portfolio item use full equal height */
+#portfolio .col-lg-4,
+#portfolio .col-sm-6 {
+    display: flex;
+}
+
+#portfolio .portfolio-item {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* 3. Make the white box (caption) fill remaining space & center nicely */
+#portfolio .portfolio-caption {
+    background: #ffffff;
+    padding: 20px;
+    flex-grow: 1;                /* fills the remaining height */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;     /* vertically centers text */
+    text-align: center;
+}
+
+/* Optional: keep headings/subheadings visually aligned */
+#portfolio .portfolio-caption-heading {
+    margin-bottom: 8px;
+}
+
+#portfolio .portfolio-caption-subheading {
+    margin-bottom: 0;
+}
+.video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 ratio */
+    height: 0;
+    overflow: hidden;
+    border-radius: 8px; /* optional elegance */
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+/* Center all portfolio items in rows that do not fill the whole row */
+#portfolio .row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;   /* <-- THIS centers the cards */
+}
+#mainNav .navbar-brand img{
+  height: 90px !important;
+  width: auto !important;
+  max-height: none;
+}
+

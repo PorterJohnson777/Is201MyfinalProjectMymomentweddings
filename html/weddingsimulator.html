@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Moment Weddings · Visual Planner (PDF + Enhanced Palette)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- html2pdf for PDF download (includes rendering) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    :root {
+      /* Environment (location-based only – NOT changed by palette) */
+      --sky-color: #f4ecff;
+      --ground-main: #efe2d0;
+
+      /* Object palette (these change with the user's color input) */
+      --palette-1: #f5ebe0;
+      --palette-2: #e8d4c2;
+      --palette-3: #d5b89c;
+      --palette-4: #c9a15a;
+      --palette-5: #b08b4d;
+
+      /* Accents & text (for UI chrome only) */
+      --accent-main: #c9a15a;
+      --accent-soft: #f5ebe0;
+      --accent-dark: #8b6b3b;
+      --accent-contrast: #f8f1e7;
+      --text-main: #2d2520;
+      --muted: #7b6f66;
+      --shadow-soft: 0 18px 40px rgba(0,0,0,0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #fdf8f0 0, #f4efe7 40%, #eee7dd 100%);
+      color: var(--text-main);
+    }
+
+    #pdfRoot.page-shell {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1, h2 {
+      font-family: "Georgia", "Times New Roman", serif;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .section-header h1 {
+      font-size: 1.6rem;
+      margin-bottom: 4px;
+    }
+
+    .section-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .sim-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.15fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      body { padding: 16px; }
+      .sim-layout { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: var(--shadow-soft);
+      padding: 18px 20px 20px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+
+    .card-header h2 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .card-header span {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .field-group { margin-bottom: 14px; }
+    .field-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+    }
+    @media (max-width: 640px) {
+      .field-row { grid-template-columns: 1fr; }
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+      color: var(--muted);
+    }
+
+    input[type="text"], select, textarea {
+      width: 100%;
+      padding: 7px 9px;
+      border-radius: 9px;
+      border: 1px solid #ded1c2;
+      background: #faf7f2;
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent-main);
+      box-shadow: 0 0 0 1px rgba(201,161,90,0.4);
+      background: #fffaf4;
+    }
+
+    textarea { resize: vertical; min-height: 70px; }
+
+    .helper-text {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .priorities-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 6px 10px;
+    }
+
+    .priority-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: #f5eee4;
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+
+    .priority-chip:hover {
+      border-color: #e1c9a0;
+    }
+
+    .priority-chip input { margin: 0; }
+
+    button.main-btn {
+      border: none;
+      border-radius: 999px;
+      background: var(--accent-main);
+      color: #fff;
+      padding: 10px 20px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      cursor: pointer;
+      margin-top: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      box-shadow: 0 10px 18px rgba(0,0,0,0.16);
+    }
+
+    button.main-btn:hover {
+      background: var(--accent-dark);
+    }
+
+    .view-tabs {
+      display: inline-flex;
+      border-radius: 999px;
+      border: 1px solid #e2d5c6;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .view-tab {
+      padding: 5px 12px;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: var(--muted);
+    }
+
+    .view-tab.active {
+      background: #f3eadc;
+      color: var(--text-main);
+    }
+
+    .canvas-card { padding-bottom: 14px; }
+
+    .wedding-scene-wrapper { margin-bottom: 10px; }
+
+    .scene-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .scene-label-row .label-main {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+    }
+
+    .scene-label-row .label-pill {
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #f3eadc;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .scene-label-row .label-pill span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent-main);
+    }
+
+    /* Ceremony scene (sky & ground use environment vars only) */
+    .wedding-scene {
+      position: relative;
+      height: 260px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: linear-gradient(to top, var(--ground-main) 40%, var(--sky-color) 40%);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.6);
+      transition: background 0.35s ease;
+    }
+
+    .scene-sky {
+      position: absolute;
+      inset: 0 0 60% 0;
+      background: linear-gradient(to top, var(--sky-color), #fdfbff);
+      transition: background 0.35s ease;
+    }
+
+    .scene-ground {
+      position: absolute;
+      left: -6%;
+      right: -6%;
+      bottom: 0;
+      height: 45%;
+      background: var(--ground-main);
+      box-shadow: 0 -8px 18px rgba(0,0,0,0.08);
+      transition: background 0.35s ease;
+    }
+
+    /* location variants (only change sky/ground + silhouettes) */
+    .wedding-scene.scene-mountain .scene-sky {
+      background: linear-gradient(to top, #e8f3ff, #fdfbff);
+    }
+    .wedding-scene.scene-mountain .scene-ground {
+      background: #e3ddcf;
+    }
+
+    .wedding-scene.scene-beach .scene-sky {
+      background: linear-gradient(to top, #cdefff, #fdfbff);
+    }
+    .wedding-scene.scene-beach .scene-ground {
+      background: #f4e1b6;
+    }
+
+    .wedding-scene.scene-ballroom .scene-sky {
+      background: radial-gradient(circle at top, #fdf7ef, #f1e5d8 40%, #ebdfd1 100%);
+    }
+    .wedding-scene.scene-ballroom .scene-ground {
+      background: linear-gradient(135deg, #e8ded2, #d9c9b8);
+    }
+
+    .wedding-scene.scene-urban .scene-sky {
+      background: linear-gradient(to top, #d7d8e2, #f7f6fb);
+    }
+    .wedding-scene.scene-urban .scene-ground {
+      background: #e5dfd6;
+    }
+
+    /* aisle – uses palette, not sky */
+    .scene-aisle {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 30%;
+      height: 100%;
+      transform: translateX(-50%) skewX(-6deg);
+      background: linear-gradient(to top, var(--palette-1), var(--palette-2));
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+      transition: background 0.35s ease;
+    }
+
+    .scene-aisle::before {
+      content: "";
+      position: absolute;
+      left: 12%;
+      right: 12%;
+      top: 35%;
+      bottom: 6%;
+      background: linear-gradient(to top, rgba(255,255,255,0.7), transparent);
+    }
+
+    /* arch – border uses accent, fill uses palette */
+    .scene-arch {
+      position: absolute;
+      bottom: 40%;
+      left: 50%;
+      width: 26%;
+      height: 30%;
+      transform: translateX(-50%);
+      border-radius: 50% 50% 0 0;
+      border: 4px solid var(--accent-main);
+      border-bottom: none;
+      background: radial-gradient(circle at top, var(--palette-1), transparent 70%);
+      box-shadow: 0 5px 16px rgba(0,0,0,0.15);
+      transition: border-color 0.35s ease, background 0.35s ease;
+    }
+
+    .scene-arch::before,
+    .scene-arch::after {
+      content: "";
+      position: absolute;
+      width: 22%;
+      height: 45%;
+      bottom: -18%;
+      border-radius: 999px;
+      background: radial-gradient(circle at top, var(--palette-2), var(--palette-3));
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+      transition: background 0.35s ease;
+    }
+    .scene-arch::before { left: -6%; }
+    .scene-arch::after  { right: -6%; }
+
+    /* vibe-specific tweaks for arch/aisle (still only using palette vars) */
+    .wedding-scene.vibe-modern .scene-arch {
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--palette-1), var(--palette-2));
+    }
+    .wedding-scene.vibe-fairytale .scene-aisle {
+      background: linear-gradient(to top, var(--palette-2), var(--palette-3));
+    }
+
+    /* chairs – use palette-4 for wood / fabric */
+    .scene-chairs {
+      position: absolute;
+      bottom: 6%;
+      left: 8%;
+      right: 8%;
+      height: 42%;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .chair-column {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+    }
+
+    .chair-row { display: flex; gap: 4px; }
+
+    .chair {
+      width: 13px;
+      height: 18px;
+      border-radius: 3px;
+      background: var(--palette-4);
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+    }
+
+    .chair::after {
+      content: "";
+      display: block;
+      width: 7px;
+      height: 6px;
+      margin: 1px auto 0;
+      border-radius: 3px;
+      background: rgba(0,0,0,0.06);
+    }
+
+    .chair-row.extra-row { opacity: 0.25; transition: opacity 0.25s ease; }
+    .wedding-scene.guests-medium .chair-row.extra-row { opacity: 0.6; }
+    .wedding-scene.guests-large .chair-row.extra-row,
+    .wedding-scene.guests-grand .chair-row.extra-row { opacity: 1; }
+
+    /* decor trees – palette-3 foliage */
+    .scene-decor-left,
+    .scene-decor-right {
+      position: absolute;
+      bottom: 18%;
+      width: 18%;
+      height: 34%;
+    }
+
+    .scene-decor-left { left: 2%; }
+    .scene-decor-right { right: 2%; }
+
+    .scene-tree {
+      position: absolute;
+      bottom: 0;
+      left: 12%;
+      width: 45%;
+      height: 60%;
+      border-radius: 45% 55% 40% 60%;
+      background: var(--palette-3);
+      box-shadow: 0 0 0 2px rgba(0,0,0,0.04);
+    }
+
+    .scene-tree::before {
+      content: "";
+      position: absolute;
+      bottom: -14%;
+      left: 40%;
+      width: 8%;
+      height: 26%;
+      background: #7b5a3d;
+      border-radius: 99px;
+    }
+
+    .scene-decor-right .scene-tree { left: 50%; }
+
+    /* budget extras */
+    .scene-lights,
+    .scene-chandeliers,
+    .scene-petals {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .scene-lights::before {
+      content: "";
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      top: 36%;
+      height: 1px;
+      background-image: linear-gradient(to right,
+        transparent,
+        rgba(255,255,255,0.8),
+        transparent
+      );
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+
+    .wedding-scene.budget-comfortable .scene-lights::before { opacity: 0.6; }
+    .wedding-scene.budget-luxury .scene-lights::before { opacity: 0.9; }
+
+    .scene-petals::before {
+      content: "";
+      position: absolute;
+      inset: 58% 20% 0;
+      background-image:
+        radial-gradient(circle at 10% 20%, var(--palette-2) 0, transparent 50%),
+        radial-gradient(circle at 70% 30%, var(--palette-3) 0, transparent 50%),
+        radial-gradient(circle at 40% 80%, var(--palette-4) 0, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+
+    .wedding-scene.vibe-romantic .scene-petals::before,
+    .wedding-scene.vibe-fairytale .scene-petals::before {
+      opacity: 0.8;
+    }
+
+    .scene-tag {
+      position: absolute;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.45);
+      color: #fdf7ef;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .scene-tag-ceremony {
+      bottom: 43%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .scene-tag-aisle {
+      bottom: 16%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .scene-tag-guests {
+      bottom: 32%;
+      left: 10%;
+    }
+
+    /* Reception scene (uses palette on objects only) */
+    .reception-scene {
+      position: relative;
+      height: 260px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #f8f2ea;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.7);
+      display: none;
+    }
+
+    .reception-scene.active { display: block; }
+
+    .reception-floor {
+      position: absolute;
+      inset: 12% 10% 14% 10%;
+      border-radius: 16px;
+      background: #fdfaf7;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+    }
+
+    .reception-dancefloor {
+      position: absolute;
+      bottom: 10%;
+      left: 50%;
+      width: 40%;
+      height: 32%;
+      transform: translateX(-50%);
+      border-radius: 10px;
+      background: repeating-linear-gradient(
+        45deg,
+        var(--palette-1),
+        var(--palette-1) 10px,
+        var(--palette-2) 10px,
+        var(--palette-2) 20px
+      );
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.06);
+    }
+
+    .reception-headtable {
+      position: absolute;
+      top: 12%;
+      left: 50%;
+      width: 46%;
+      height: 14%;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      background: var(--palette-2);
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.06);
+    }
+
+    /* TABLES: now show BOTH palette-1 and palette-2 on each table */
+    .reception-table {
+      position: absolute;
+      width: 17%;
+      height: 17%;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 20%, var(--palette-1), var(--palette-2));
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.06);
+    }
+
+    .reception-table::after {
+      content: "";
+      position: absolute;
+      inset: 20%;
+      border-radius: 50%;
+      background: var(--palette-2);
+    }
+
+    .reception-table-row-1 .reception-table:nth-child(1) { top: 22%; left: 18%; }
+    .reception-table-row-1 .reception-table:nth-child(2) { top: 22%; right: 18%; }
+    .reception-table-row-2 .reception-table:nth-child(1) { top: 44%; left: 14%; }
+    .reception-table-row-2 .reception-table:nth-child(2) { top: 44%; right: 14%; }
+    .reception-table-row-2 .reception-table:nth-child(3) { top: 44%; left: 42%; }
+
+    .reception-band {
+      position: absolute;
+      bottom: 12%;
+      left: 10%;
+      width: 18%;
+      height: 18%;
+      border-radius: 10px;
+      background: var(--palette-4);
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.06);
+    }
+
+    .reception-lounge {
+      position: absolute;
+      bottom: 12%;
+      right: 10%;
+      width: 18%;
+      height: 18%;
+      border-radius: 10px;
+      background: var(--palette-5);
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.06);
+    }
+
+    .reception-label {
+      position: absolute;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #7a6a58;
+    }
+
+    .reception-label.headtable { top: 8%; left: 50%; transform: translateX(-50%); }
+    .reception-label.dancefloor { bottom: 6%; left: 50%; transform: translateX(-50%); }
+    .reception-label.band { bottom: 8%; left: 10%; }
+    .reception-label.lounge { bottom: 8%; right: 10%; }
+
+    .palette-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px 10px;
+      border-radius: 12px;
+      background: #f9f3ea;
+      margin-bottom: 8px;
+    }
+
+    .palette-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+      color: var(--muted);
+    }
+
+    .palette-swatches {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .swatch {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .narrative {
+      font-size: 0.88rem;
+    }
+
+    .narrative p { margin: 0 0 8px; color: var(--muted); }
+
+    .narrative ul {
+      margin: 2px 0 6px 18px;
+      padding: 0;
+    }
+
+    .narrative li { margin-bottom: 4px; }
+
+    .narrative-footer {
+      font-size: 0.8rem;
+      margin-top: 6px;
+      color: #5c4e3e;
+      font-weight: 600;
+    }
+
+    .badge-small {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #f3eadc;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    .badge-small span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent-main);
+    }
+
+    .pdf-button-row {
+      margin-top: 12px;
+      text-align: right;
+    }
+
+    button.pdf-btn {
+      border: none;
+      border-radius: 999px;
+      background: #444;
+      color: #fff;
+      padding: 8px 16px;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+    }
+
+    button.pdf-btn:hover {
+      background: #222;
+    }
+  </style>
+</head>
+<body>
+<div id="pdfRoot" class="page-shell">
+  <div class="section-header">
+    <h1>My Moment Weddings · Visual Planner</h1>
+    <p>Capture their dream and watch the ceremony &amp; reception re-render around their answers.</p>
+  </div>
+
+  <div class="sim-layout">
+    <!-- FORM -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Step 1 · Intake</h2>
+        <span>Tell us the dream</span>
+      </div>
+
+      <form id="plannerForm">
+        <div class="field-group">
+          <label for="coupleName">Couple Name(s)</label>
+          <input type="text" id="coupleName" placeholder="Alex &amp; Taylor" />
+        </div>
+
+        <div class="field-row field-group">
+          <div>
+            <label for="weddingSeason">Preferred Season</label>
+            <select id="weddingSeason">
+              <option value="spring">Spring</option>
+              <option value="summer">Summer</option>
+              <option value="fall">Fall</option>
+              <option value="winter">Winter</option>
+              <option value="flexible">I’m flexible</option>
+            </select>
+          </div>
+          <div>
+            <label for="guestCount">Guest Count</label>
+            <select id="guestCount">
+              <option value="intimate">Up to 50</option>
+              <option value="medium">50–150</option>
+              <option value="large">150–300</option>
+              <option value="grand">300+</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row field-group">
+          <div>
+            <label for="locationStyle">Setting</label>
+            <select id="locationStyle">
+              <option value="garden">Garden / Estate</option>
+              <option value="mountain">Mountains / Overlook</option>
+              <option value="ballroom">Ballroom / Interior</option>
+              <option value="beach">Beach / Waterfront</option>
+              <option value="urban">Urban Rooftop / Loft</option>
+            </select>
+          </div>
+          <div>
+            <label for="overallVibe">Overall Vibe</label>
+            <select id="overallVibe">
+              <option value="romantic">Romantic &amp; Whimsical</option>
+              <option value="classic">Classic &amp; Timeless</option>
+              <option value="modern">Modern &amp; Minimal</option>
+              <option value="boho">Boho &amp; Organic</option>
+              <option value="fairytale">Fairytale &amp; Dramatic</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row field-group">
+          <div>
+            <label for="ceremonyStyle">Ceremony Style</label>
+            <select id="ceremonyStyle">
+              <option value="outdoor">Outdoor aisle &amp; arch</option>
+              <option value="indoor">Indoor focal backdrop</option>
+              <option value="chapel">Chapel / historic</option>
+              <option value="rooftop">Rooftop / skyline</option>
+            </select>
+          </div>
+          <div>
+            <label for="budgetLevel">Budget Level</label>
+            <select id="budgetLevel">
+              <option value="smart">Under $25,000</option>
+              <option value="comfortable">$25,000–$60,000</option>
+              <option value="luxury">$60,000+</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="colorPreferences">Color Palette</label>
+          <input type="text" id="colorPreferences" placeholder="navy blue, champagne, ivory, soft blush, sage" />
+          <div class="helper-text">
+            Up to 5 colors. Use CSS names or hex codes. We recognize phrases like
+            <em>navy blue, dusty rose, champagne, soft sage</em> and map them to beautiful scene colors.
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>What matters most?</label>
+          <div class="priorities-grid">
+            <label class="priority-chip"><input type="checkbox" value="venue" /> Venue impact</label>
+            <label class="priority-chip"><input type="checkbox" value="photography" /> Photo &amp; film</label>
+            <label class="priority-chip"><input type="checkbox" value="design" /> Design &amp; decor</label>
+            <label class="priority-chip"><input type="checkbox" value="food" /> Food &amp; drinks</label>
+            <label class="priority-chip"><input type="checkbox" value="experience" /> Guest experience</label>
+            <label class="priority-chip"><input type="checkbox" value="music" /> Music &amp; dancing</label>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="specialNotes">Non-negotiables / dreams</label>
+          <textarea id="specialNotes" placeholder="Sunset vows, all-white florals, chandeliers, live band, fireworks…"></textarea>
+        </div>
+
+        <button type="button" id="renderBtn" class="main-btn">
+          <span>✨</span>
+          <span>Render Wedding Day</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- CANVAS + NARRATIVE -->
+    <div class="card canvas-card">
+      <div class="card-header">
+        <h2>Step 2 · Visual Rendering</h2>
+        <span>Ceremony &amp; reception</span>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <div class="view-tabs">
+          <button type="button" class="view-tab active" data-view="ceremony">Ceremony</button>
+          <button type="button" class="view-tab" data-view="reception">Reception</button>
+        </div>
+        <span style="font-size:0.76rem; color:var(--muted);" id="sceneSummary">
+          Garden · Romantic · 50–150 guests
+        </span>
+      </div>
+
+      <div class="wedding-scene-wrapper">
+        <div class="scene-label-row">
+          <span class="label-main" id="sceneLabelMain">Ceremony layout · stylized</span>
+          <span class="label-pill">
+            <span class="dot"></span>
+            LIVE RENDER
+          </span>
+        </div>
+
+        <!-- Ceremony Scene -->
+        <div id="weddingScene" class="wedding-scene scene-garden vibe-romantic guests-medium budget-comfortable">
+          <div class="scene-sky"></div>
+          <div class="scene-ground"></div>
+
+          <div class="scene-decor-left">
+            <div class="scene-tree"></div>
+          </div>
+          <div class="scene-decor-right">
+            <div class="scene-tree"></div>
+          </div>
+
+          <div class="scene-aisle"></div>
+          <div class="scene-arch"></div>
+
+          <div class="scene-chairs">
+            <div class="chair-column">
+              <div class="chair-row">
+                <div class="chair"></div><div class="chair"></div><div class="chair"></div><div class="chair"></div>
+              </div>
+              <div class="chair-row">
+                <div class="chair"></div><div class="chair"></div><div class="chair"></div><div class="chair"></div>
+              </div>
+              <div class="chair-row extra-row">
+                <div class="chair"></div><div class="chair"></div><div class="chair"></div><div class="chair"></div>
+              </div>
+            </div>
+            <div class="chair-column">
+              <div class="chair-row">
+                <div class="chair"></div><div class="chair"></div><div class="chair"></div><div class="chair"></div>
+              </div>
+              <div class="chair-row">
+                <div class="chair"></div><div class="chair"></div><div class="chair"></div><div class="chair"></div>
+              </div>
+              <div class="chair-row extra-row">
+                <div class="chair"></div><div class="chair"></div><div class="chair"></div><div class="chair"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="scene-lights"></div>
+          <div class="scene-petals"></div>
+
+          <div class="scene-tag scene-tag-ceremony">CEREMONY</div>
+          <div class="scene-tag scene-tag-aisle">AISLE</div>
+          <div class="scene-tag scene-tag-guests">SEATING</div>
+        </div>
+
+        <!-- Reception Scene -->
+        <div id="receptionScene" class="reception-scene">
+          <div class="reception-floor"></div>
+          <div class="reception-headtable"></div>
+          <div class="reception-dancefloor"></div>
+
+          <div class="reception-table-row-1">
+            <div class="reception-table"></div>
+            <div class="reception-table"></div>
+          </div>
+          <div class="reception-table-row-2">
+            <div class="reception-table"></div>
+            <div class="reception-table"></div>
+            <div class="reception-table"></div>
+          </div>
+
+          <div class="reception-band"></div>
+          <div class="reception-lounge"></div>
+
+          <div class="reception-label headtable">HEAD TABLE</div>
+          <div class="reception-label dancefloor">DANCE FLOOR</div>
+          <div class="reception-label band">BAND / DJ</div>
+          <div class="reception-label lounge">LOUNGE</div>
+        </div>
+      </div>
+
+      <div class="palette-row">
+        <div class="palette-label">Palette in scene</div>
+        <div id="paletteSwatches" class="palette-swatches">
+          <!-- filled by JS -->
+        </div>
+      </div>
+
+      <div class="narrative">
+        <p id="narrativeIntro">
+          Based on your answers, here’s a visual and written snapshot of your ceremony and reception.
+        </p>
+        <ul id="narrativeDetails"></ul>
+        <p id="narrativeClosing" class="narrative-footer">
+          This becomes the starting point for a full My Moment Weddings design, vendor lineup, and production timeline.
+        </p>
+        <div style="margin-top:6px;">
+          <span class="badge-small">
+            <span class="dot"></span>
+            DRAFT VISION · FOR REVIEW
+          </span>
+        </div>
+      </div>
+
+      <div class="pdf-button-row">
+        <button type="button" id="downloadPdfBtn" class="pdf-btn">Download Vision as PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const renderBtn = document.getElementById("renderBtn");
+  const scene = document.getElementById("weddingScene");
+  const receptionScene = document.getElementById("receptionScene");
+  const paletteSwatches = document.getElementById("paletteSwatches");
+  const narrativeIntro = document.getElementById("narrativeIntro");
+  const narrativeDetails = document.getElementById("narrativeDetails");
+  const narrativeClosing = document.getElementById("narrativeClosing");
+  const sceneSummary = document.getElementById("sceneSummary");
+  const sceneLabelMain = document.getElementById("sceneLabelMain");
+  const viewTabs = document.querySelectorAll(".view-tab");
+  const extraRows = document.querySelectorAll(".extra-row");
+  const downloadPdfBtn = document.getElementById("downloadPdfBtn");
+
+  const locationCopy = {
+    garden: "a romantic garden or estate framed by greenery and seasonal florals",
+    mountain: "a mountain overlook with sweeping views and fresh, crisp air",
+    ballroom: "an elegant ballroom with layered lighting and architectural detail",
+    beach: "a beachfront setting with soft sand and an open horizon",
+    urban: "a chic rooftop or loft with skyline views and modern lines"
+  };
+
+  const vibeCopy = {
+    romantic: "soft, romantic details and layered candlelight",
+    classic: "clean, timeless lines and formal touches",
+    modern: "edited, minimal styling with strong structure",
+    boho: "organic textures, free-flowing florals, and relaxed elegance",
+    fairytale: "dramatic focal points, lush florals, and high-impact moments"
+  };
+
+  function resetSceneClasses() {
+    scene.className = "wedding-scene";
+  }
+
+  function updateSceneClass(location, vibe, guests, budget) {
+    resetSceneClasses();
+    scene.classList.add("scene-" + location);
+    scene.classList.add("vibe-" + vibe);
+    scene.classList.add("guests-" + guests);
+    scene.classList.add("budget-" + budget);
+
+    // Guest rows visibility
+    extraRows.forEach(r => {
+      if (guests === "intimate") {
+        r.style.opacity = "0.25";
+      } else if (guests === "medium") {
+        r.style.opacity = "0.6";
+      } else {
+        r.style.opacity = "1";
+      }
+    });
+
+    // Location drives environment only (sky/ground)
+    const root = document.documentElement;
+    if (location === "garden") {
+      root.style.setProperty("--sky-color", "#f4ecff");
+      root.style.setProperty("--ground-main", "#efe2d0");
+    } else if (location === "mountain") {
+      root.style.setProperty("--sky-color", "#e8f3ff");
+      root.style.setProperty("--ground-main", "#e3ddcf");
+    } else if (location === "beach") {
+      root.style.setProperty("--sky-color", "#cdefff");
+      root.style.setProperty("--ground-main", "#f4e1b6");
+    } else if (location === "ballroom") {
+      root.style.setProperty("--sky-color", "#f4ebe0");
+      root.style.setProperty("--ground-main", "#e0d0c0");
+    } else if (location === "urban") {
+      root.style.setProperty("--sky-color", "#d7d8e2");
+      root.style.setProperty("--ground-main", "#e5dfd6");
+    }
+  }
+
+  // Color alias map: supports phrases like "navy blue", "dusty rose", etc.
+  const colorAliases = {
+    "navy blue": "#000080",
+    "navy": "#000080",
+    "midnight blue": "#191970",
+    "royal blue": "#4169e1",
+    "dusty rose": "#d4a5a5",
+    "blush": "#f9d5d3",
+    "soft blush": "#f7c7c3",
+    "champagne": "#f7e7ce",
+    "champagne gold": "#d4af37",
+    "gold": "#d4af37",
+    "ivory": "#fffff0",
+    "cream": "#fffdd0",
+    "soft sage": "#cfd8c0",
+    "sage": "#c1c8b6",
+    "forest green": "#228b22",
+    "emerald": "#50c878",
+    "burgundy": "#800020",
+    "wine": "#722f37",
+    "terracotta": "#e2725b",
+    "peach": "#ffcba4",
+    "dusty blue": "#809bbf",
+    "slate blue": "#6a7ba8"
+  };
+
+  function normalizeColorName(c) {
+    const key = c.trim().toLowerCase();
+    return colorAliases[key] || c;
+  }
+
+  // Parse multiple colors from input and map to palette slots
+  function parseColorPalette(raw) {
+    if (!raw) return [];
+    return raw
+      .split(",")
+      .map(c => c.trim())
+      .filter(c => c.length > 0)
+      .slice(0, 5)
+      .map(normalizeColorName);
+  }
+
+  function updatePalette(colorsRaw) {
+    const root = document.documentElement;
+    const palette = parseColorPalette(colorsRaw);
+
+    const defaults = ["#f5ebe0", "#e8d4c2", "#d5b89c", "#c9a15a", "#b08b4d"];
+
+    for (let i = 0; i < 5; i++) {
+      const col = palette[i] || defaults[i];
+      root.style.setProperty(`--palette-${i+1}`, col);
+    }
+
+    // Accents for UI / borders only (not sky)
+    root.style.setProperty("--accent-main", palette[3] || "#c9a15a");
+    root.style.setProperty("--accent-soft", palette[0] || "#f5ebe0");
+    root.style.setProperty("--accent-dark", palette[2] || "#8b6b3b");
+    root.style.setProperty("--accent-contrast", palette[1] || "#f8f1e7");
+
+    // Swatches: clear first to avoid duplication
+    paletteSwatches.innerHTML = "";
+    const forDisplay = palette.length ? palette : defaults;
+
+    forDisplay.forEach(col => {
+      const span = document.createElement("span");
+      span.className = "swatch";
+      span.style.background = col;
+      paletteSwatches.appendChild(span);
+    });
+  }
+
+  function buildNarrative(couple, location, vibe, guests, season, budget, priorities, notes) {
+    const coupleName = couple || "This couple";
+
+    narrativeDetails.innerHTML = ""; // clear
+
+    const li1 = document.createElement("li");
+    li1.innerHTML = `<strong>Ceremony:</strong> ${coupleName} say “I do” in ${locationCopy[location] || "a tailored setting"}, styled with ${vibeCopy[vibe] || "your chosen atmosphere"}.`;
+    narrativeDetails.appendChild(li1);
+
+    const li2 = document.createElement("li");
+    let guestText = "an intimate guest list";
+    if (guests === "medium") guestText = "a mid-sized gathering of your favorite people";
+    if (guests === "large") guestText = "a large, lively celebration";
+    if (guests === "grand") guestText = "a grand, packed house of guests";
+    li2.innerHTML = `<strong>Guests:</strong> Seating is planned for ${guestText}, with a clear aisle sightline for every row.`;
+    narrativeDetails.appendChild(li2);
+
+    const li3 = document.createElement("li");
+    let budgetText = "prioritizing impact in the most important areas.";
+    if (budget === "comfortable") budgetText = "balancing beautiful design with smart investment.";
+    if (budget === "luxury") budgetText = "layering premium finishes, custom moments, and immersive guest experiences.";
+    li3.innerHTML = `<strong>Budget Strategy:</strong> Your ${budget} budget is ${budgetText}`;
+    narrativeDetails.appendChild(li3);
+
+    if (priorities.length) {
+      const li4 = document.createElement("li");
+      li4.innerHTML = `<strong>Top Priorities:</strong> We lean into ${priorities.join(", ")} as the non-negotiables in your experience.`;
+      narrativeDetails.appendChild(li4);
+    }
+
+    if (notes) {
+      const li5 = document.createElement("li");
+      li5.innerHTML = `<strong>Signature Moments:</strong> ${notes}`;
+      narrativeDetails.appendChild(li5);
+    }
+
+    const seasonText = season === "flexible"
+      ? "Season flexible based on venue & rate advantages."
+      : `Anchored in ${season} timing for light, weather, and floral availability.`;
+    narrativeIntro.textContent = `${coupleName}'s day is shaped as a ${locationCopy[location] || "custom"} celebration with ${vibeCopy[vibe] || "your chosen atmosphere"}. ${seasonText}`;
+    narrativeClosing.textContent = "From here, My Moment Weddings can turn this into a detailed floorplan, vendor team, and hour-by-hour production timeline.";
+  }
+
+  // TABS
+  viewTabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      viewTabs.forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      const view = tab.getAttribute("data-view");
+      if (view === "ceremony") {
+        document.getElementById("weddingScene").style.display = "block";
+        receptionScene.classList.remove("active");
+        sceneLabelMain.textContent = "Ceremony layout · stylized";
+      } else {
+        document.getElementById("weddingScene").style.display = "none";
+        receptionScene.classList.add("active");
+        sceneLabelMain.textContent = "Reception layout · stylized floorplan";
+      }
+    });
+  });
+
+  renderBtn.addEventListener("click", () => {
+    const coupleName = document.getElementById("coupleName").value.trim();
+    const season = document.getElementById("weddingSeason").value;
+    const guests = document.getElementById("guestCount").value;
+    const location = document.getElementById("locationStyle").value;
+    const vibe = document.getElementById("overallVibe").value;
+    const budget = document.getElementById("budgetLevel").value;
+    const colors = document.getElementById("colorPreferences").value;
+    const notes = document.getElementById("specialNotes").value.trim();
+
+    const priorityValues = Array.from(
+      document.querySelectorAll(".priority-chip input:checked")
+    ).map(i => i.parentElement.textContent.trim());
+
+    updateSceneClass(location, vibe, guests, budget);
+    updatePalette(colors);
+    buildNarrative(coupleName, location, vibe, guests, season, budget, priorityValues, notes);
+
+    // Update summary line
+    let guestLabel = "50–150 guests";
+    if (guests === "intimate") guestLabel = "up to 50 guests";
+    if (guests === "large") guestLabel = "150–300 guests";
+    if (guests === "grand") guestLabel = "300+ guests";
+
+    const locLabelMap = {
+      garden: "Garden",
+      mountain: "Mountain",
+      ballroom: "Ballroom",
+      beach: "Beach",
+      urban: "Urban"
+    };
+    const vibeLabelMap = {
+      romantic: "Romantic",
+      classic: "Classic",
+      modern: "Modern",
+      boho: "Boho",
+      fairytale: "Fairytale"
+    };
+
+    sceneSummary.textContent = `${locLabelMap[location] || "Custom"} · ${vibeLabelMap[vibe] || "Styled"} · ${guestLabel}`;
+  });
+
+  // PDF Download (includes rendering + narrative + intake answers)
+  downloadPdfBtn.addEventListener("click", () => {
+    const element = document.getElementById("pdfRoot");
+    const opt = {
+      margin:       0.4,
+      filename:     'my-moment-wedding-vision.pdf',
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save();
+  });
+
+  // Initial seed state
+  updatePalette("");
+  buildNarrative("", "garden", "romantic", "medium", "summer", "comfortable", [], "");
+})();
+</script>
+</body>
+</html>
